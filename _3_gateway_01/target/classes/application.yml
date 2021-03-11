@@ -1,0 +1,39 @@
+server:
+  port: 10010
+spring:
+  application:
+    name: gateway-Api
+
+  cloud:
+    gateway:
+      discovery: #开启微服务名字转发   也就是根据服务名去访问不同的项目
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        #路由id，可任意
+        - id: user-consumer-rout
+          uri: lb://user-consumer
+          #代理的服务地址
+#          uri: http://127.0.0.1:8080   #将地址写死了，不合理
+          #使用rureka服务名进行请求访问
+#          uri: lb://user-service
+
+          #路由断言,可以匹配映射地址  ---
+          #当访问路径包含 ip:10010/consumer/** 就会将访问转到 --> uri/consumer/**
+          predicates:
+            - Path=/consumer/**,/cf/**
+
+        - id: user-service-rout
+          uri: http://127.0.0.1:8088
+          predicates:
+            - Path=/rest/**
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:10086/eureka
+  instance:
+    prefer-ip-address: true
+
